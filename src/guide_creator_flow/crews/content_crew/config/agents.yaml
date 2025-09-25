@@ -9,7 +9,7 @@ content_writer:
     You are a talented educational writer with expertise in creating clear, engaging
     content. You have a gift for explaining complex concepts in accessible language
     and organizing information in a way that helps readers build their understanding.
-  llm: openrouter/openai/gpt-5  # e.g. openai/gpt-4o, google/gemini-2.0-flash, anthropic/claude...
+  llm: openrouter/openai/gpt-4.1  # e.g. openai/gpt-4o, google/gemini-2.0-flash, anthropic/claude...
 
 content_reviewer:
   role: >
@@ -22,4 +22,4 @@ content_reviewer:
     content. You have an eye for detail, clarity, and coherence. You excel at
     improving content while maintaining the original author's voice and ensuring
     consistent quality across multiple sections.
-  llm: openrouter/openai/gpt-5  # e.g. openai/gpt-4o, google/gemini-2.0-flash, anthropic/claude...
+  llm: openrouter/openai/gpt-4.1  # e.g. openai/gpt-4o, google/gemini-2.0-flash, anthropic/claude...
