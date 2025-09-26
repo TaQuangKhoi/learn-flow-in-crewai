@@ -1,12 +1,36 @@
 #!/usr/bin/env python
 import json
 import os
+import unicodedata
+import re
+from pathlib import Path
 from typing import List, Dict
 from pydantic import BaseModel, Field
 from crewai import LLM
 from crewai.flow.flow import Flow, listen, start
 
 from src.guide_creator_flow.crews.content_crew.content_crew import ContentCrew
+
+
+# Pattern to match various Unicode dash characters
+UNICODE_DASHES = re.compile(r"[\u2010\u2011\u2012\u2013\u2014\u2212]")  # hyphen, non-breaking hyphen, figure/en/em dash, minus
+
+
+def normalize_text(s: str) -> str:
+    """
+    Normalize text to handle Unicode characters that might cause encoding issues.
+    
+    Args:
+        s: Input string to normalize
+        
+    Returns:
+        Normalized string with problematic Unicode characters replaced
+    """
+    # 1) NFC normalization to combine composed characters
+    s = unicodedata.normalize("NFC", s)
+    # 2) Replace all dash variants with regular ASCII hyphen
+    s = UNICODE_DASHES.sub("-", s)
+    return s
 
 
 # Define our models for structured data
@@ -85,11 +109,11 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
         self.state.guide_outline = GuideOutline(**outline_dict)
 
         # Ensure output directory exists before saving
-        os.makedirs("output", exist_ok=True)
+        Path("output").mkdir(parents=True, exist_ok=True)
 
-        # Save the outline to a file
-        with open("output/guide_outline.json", "w") as f:
-            json.dump(outline_dict, f, indent=2)
+        # Save the outline to a file with UTF-8 encoding
+        with open("output/guide_outline.json", "w", encoding="utf-8") as f:
+            json.dump(outline_dict, f, indent=2, ensure_ascii=False)
 
         print(f"Guide outline created with {len(self.state.guide_outline.sections)} sections")
         return self.state.guide_outline
@@ -140,8 +164,12 @@ class GuideCreatorFlow(Flow[GuideCreatorState]):
         # Add conclusion
         guide_content += f"## Conclusion\n\n{outline.conclusion}\n\n"
 
-        # Save the guide
-        with open("output/complete_guide.md", "w") as f:
+        # Normalize content to handle Unicode characters safely
+        guide_content = normalize_text(guide_content)
+
+        # Ensure output directory exists and save the guide with UTF-8 encoding
+        Path("output").mkdir(parents=True, exist_ok=True)
+        with open("output/complete_guide.md", "w", encoding="utf-8", newline="") as f:
             f.write(guide_content)
 
         print("\nComplete guide compiled and saved to output/complete_guide.md")
